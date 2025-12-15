@@ -2,7 +2,7 @@
 
 DWORD GetPIDFromSCManager() {
 
-	printf("[*] Attempting to detect PID from Service Manager...\n");
+	printf("[*] Querying Service Control Manager...\n");
 
 	SC_HANDLE schSCManager, schService;
 	SERVICE_STATUS_PROCESS ssProcess = {};
@@ -12,7 +12,7 @@ DWORD GetPIDFromSCManager() {
 
 	if (NULL == schSCManager) {
 
-		printf("[!] SCM: OpenSCManager failed (%d)\n", GetLastError());
+		printf("[!] SCM connection failed (0x%X)\n", GetLastError());
 		return 0;
 
 	}
@@ -21,7 +21,7 @@ DWORD GetPIDFromSCManager() {
 
 	if (schService == NULL) {
 
-		printf("[!] SCM: OpenService failed (%d)\n", GetLastError());
+		printf("[!] Service handle unavailable (0x%X)\n", GetLastError());
 		CloseServiceHandle(schSCManager);
 		return 0;
 
@@ -29,7 +29,7 @@ DWORD GetPIDFromSCManager() {
 
 	if (!QueryServiceStatusEx(schService, SC_STATUS_PROCESS_INFO, reinterpret_cast<LPBYTE>(&ssProcess), sizeof(ssProcess), &dwBytesNeeded)) {
 
-		printf("[!] SCM: QueryServiceStatusEx failed (%d)\n", GetLastError());
+		printf("[!] Service status query failed (0x%X)\n", GetLastError());
 		CloseServiceHandle(schService);
 		CloseServiceHandle(schSCManager);
 		return 0;

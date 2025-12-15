@@ -7,7 +7,7 @@
 
 DWORD GetPIDFromWMI() {
 
-	printf("[*] Attempting to detect PID from WMI....\n");
+	printf("[*] Querying Windows Management Interface...\n");
 
 	DWORD dwEventLogPID = 0;
 
@@ -17,7 +17,7 @@ DWORD GetPIDFromWMI() {
 
 	if (FAILED(hRes)) {
 
-		printf("[!] WMI: Failed to initialize COM library.\n");
+		printf("[!] COM initialization failed.\n");
 		return 0;
 
 	}
@@ -26,7 +26,7 @@ DWORD GetPIDFromWMI() {
 
 	if (FAILED(hRes)) {
 
-		printf("[!] WMI: Failed to initialize security.\n");
+		printf("[!] Security context initialization failed.\n");
 		CoUninitialize();
 		return 0;
 
@@ -38,7 +38,7 @@ DWORD GetPIDFromWMI() {
 
 	if (FAILED(hRes)) {
 
-		printf("[!] WMI: Failed to create IWbemLocator object.\n");
+		printf("[!] WMI locator creation failed.\n");
 		CoUninitialize();
 		return 0;
 
@@ -50,7 +50,7 @@ DWORD GetPIDFromWMI() {
 
 	if (FAILED(hRes)) {
 
-		printf("[!] WMI: Could not connect.");
+		printf("[!] WMI namespace connection failed.");
 		pLoc->Release();
 		CoUninitialize();
 		return 0;
@@ -61,7 +61,7 @@ DWORD GetPIDFromWMI() {
 
 	if (FAILED(hRes)) {
 
-		printf("[!] WMI: Could not set proxy blanket.\n");
+		printf("[!] Proxy configuration failed.\n");
 		pSvc->Release();
 		pLoc->Release();
 		CoUninitialize();
@@ -75,7 +75,7 @@ DWORD GetPIDFromWMI() {
 
 	if (FAILED(hRes)) {
 
-		printf("[!] WMI: Query failed.\n");
+		printf("[!] Service enumeration failed.\n");
 		pSvc->Release();
 		pLoc->Release();
 		CoUninitialize();
